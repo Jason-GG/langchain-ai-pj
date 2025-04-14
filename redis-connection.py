@@ -6,7 +6,7 @@ import redis
 #     host = 'prod.mce-vecotr-db-redis.dx0ahi.use1.cache.amazonaws.com'
 # else:
 # host = 'cmdb-service-065e5da12eafa418.elb.us-east-1.amazonaws.com'
-host = 'master.mce-vecotr-db-redis.dx0ahi.use1.cache.amazonaws.com'
+host = 'mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com'
 port = 6379
 tls = True  # Enable TLS
 
