@@ -15,7 +15,7 @@ def redis_connection():
     r = redis.StrictRedis(
         host=host,
         port=port,
-        ssl=tls,
+        # ssl=tls,
         ssl_certfile=None,  # Add your certificate file here if needed
         ssl_keyfile=None,   # Add your private key file here if needed
         ssl_ca_certs=None,  # Add CA certificates here if needed
