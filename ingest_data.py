@@ -1,4 +1,5 @@
-from langchain.vectorstores import redis
+# from langchain.vectorstores import Redis
+from redis_v import Redis
 from langchain.schema import Document
 # ollama_embeddings.py
 from langchain_core.embeddings import Embeddings
@@ -46,8 +47,8 @@ if __name__ == "__main__":
 
     # ---- Ingest documents into Redis ----
     # command MODULE LIST is not supported by Redis Labs - monkey patch it
-    redis._check_redis_module_exist = lambda *args: True
-    vector_store = redis.from_documents(
+    Redis._check_redis_module_exist = lambda *args: True
+    vector_store = Redis.from_documents(
         documents=docs,
         embedding=embedding,
         redis_url=redis_url,
