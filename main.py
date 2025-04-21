@@ -38,7 +38,9 @@ def get_qa_chain():
     embedding = OllamaEmbeddings(model='deepseek-r1:1.5b')
     vector_store = Redis.from_existing_index(
         embedding=embedding,
-        redis_url=redis_url
+        redis_url=redis_url,
+        index_name="my-index",  # or whatever index name you used
+        schema="flat"  # or "hnsw" depending on what you used when creating the index
     )
 
     # Create a retrieval-based QA chain
