@@ -33,6 +33,15 @@ class OllamaEmbeddings(Embeddings):
 
 def init_vector_store():
     embedding_model = OllamaEmbeddings()
+    index_name = "my-index"  # This should match the index name you used when you first stored the vectors
+
+    # Define schema (this can be reused from when you created the index)
+    # If you don't have a custom schema, you can define the default one
+    schema = {
+        "content": "TEXT",
+        "embedding": "VECTOR"
+    }
+
     # Connect to Redis
     # vector_store = Redis(
     #     redis_url="redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379",
@@ -42,7 +51,10 @@ def init_vector_store():
     vector_store = Redis.from_existing_index(
         redis_host="mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com",
         redis_port=6379,
-        embedding=embedding_model)
+        embedding=embedding_model,
+        index_name=index_name,
+        schema=schema,
+    )
 
     return vector_store
 
