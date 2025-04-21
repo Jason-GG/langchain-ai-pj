@@ -34,11 +34,16 @@ class OllamaEmbeddings(Embeddings):
 def init_vector_store():
     embedding_model = OllamaEmbeddings()
     # Connect to Redis
-    vector_store = Redis(
-        redis_url="redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379",
-        index_name="ollama-index",
-        embedding=embedding_model
-    )
+    # vector_store = Redis(
+    #     redis_url="redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379",
+    #     index_name="ollama-index",
+    #     embedding=embedding_model
+    # )
+    vector_store = Redis.from_existing_index(
+        redis_host="mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com",
+        redis_port=6379,
+        embedding=embedding_model)
+
     return vector_store
 
 vector_store = init_vector_store()
