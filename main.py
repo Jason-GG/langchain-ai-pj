@@ -1,19 +1,10 @@
-import bs4
-from langchain import hub
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langgraph.graph import START, StateGraph
-from typing_extensions import List, TypedDict
-from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_community.vectorstores import Redis
-# vector_store = InMemoryVectorStore(embeddings)
+from langchain.vectorstores import Redis
 from langchain.chains import RetrievalQA
+from langchain_core.embeddings import Embeddings
 import requests
-from langchain.embeddings.base import Embeddings
 
-redis_url = "redis://10.245.33.66:6379"
 
+# Your custom embedding class
 class OllamaEmbeddings(Embeddings):
     def __init__(self, model: str = "nomic-embed-text", endpoint: str = "http://localhost:11434"):
         self.model = model
@@ -34,28 +25,36 @@ class OllamaEmbeddings(Embeddings):
         return response.json()["embedding"]
 
 
-def get_qa_chain():
+# ---- Configuration ----
+redis_url = "redis://10.245.33.66:6379"
+index_name = "my-index"
+
+
+def main():
     embedding = OllamaEmbeddings(model='deepseek-r1:1.5b')
+
+    # Monkey patch Redis module check
+    Redis._check_redis_module_exist = lambda *args: True
+
+    # Load the existing index from Redis
     vector_store = Redis.from_existing_index(
         embedding=embedding,
         redis_url=redis_url,
-        index_name="my-index",  # or whatever index name you used
-        schema="flat"  # or "hnsw" depending on what you used when creating the index
+        index_name=index_name,
+        schema="flat"  # this only works with `langchain.vectorstores.Redis`
     )
 
-    # Create a retrieval-based QA chain
-    qa_chain_v = RetrievalQA.from_chain_type(
-        llm=embedding,
-        chain_type="map_reduce",
-        retriever=vector_store.as_retriever()
+    # Build RetrievalQA chain
+    qa = RetrievalQA.from_chain_type(
+        llm=embedding,  # If you have a real LLM (like OpenAI), replace this
+        retriever=vector_store.as_retriever(),
+        chain_type="stuff"  # or "map_reduce" / "refine"
     )
-    return qa_chain_v
+
+    query = "What is LangChain?"
+    answer = qa.run(query)
+    print(f"Q: {query}\nA: {answer}")
 
 
 if __name__ == "__main__":
-    qa_chain = get_qa_chain()
-    query = "What is the information about Document 1?"
-
-    # Get the answer using RAG
-    result = qa_chain.run(query)
-    print(result)
+    main()
