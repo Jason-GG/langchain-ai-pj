@@ -8,13 +8,16 @@ from typing_extensions import List, TypedDict
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_community.vectorstores import Redis
 # vector_store = InMemoryVectorStore(embeddings)
-
+from langchain.chains import RetrievalQA
 import requests
 from langchain.embeddings.base import Embeddings
 
+redis_url = "redis://10.245.33.66:6379"
+
 class OllamaEmbeddings(Embeddings):
-    def __init__(self, model: str = "nomic-embed-text"):
+    def __init__(self, model: str = "nomic-embed-text", endpoint: str = "http://localhost:11434"):
         self.model = model
+        self.endpoint = endpoint
 
     def embed_documents(self, texts):
         return [self._embed(text) for text in texts]
@@ -24,92 +27,33 @@ class OllamaEmbeddings(Embeddings):
 
     def _embed(self, text):
         response = requests.post(
-            "http://localhost:11434/api/embeddings",
+            f"{self.endpoint}/api/embeddings",
             json={"model": self.model, "prompt": text}
         )
+        response.raise_for_status()
         return response.json()["embedding"]
 
 
-
-def init_vector_store():
-    embedding_model = OllamaEmbeddings()
-    index_name = "my-index"  # This should match the index name you used when you first stored the vectors
-
-    # Define schema (this can be reused from when you created the index)
-    # If you don't have a custom schema, you can define the default one
-    schema = {
-        "content": "TEXT",
-        "embedding": "VECTOR"
-    }
-
-    # Connect to Redis
-    # vector_store = Redis(
-    #     redis_url="redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379",
-    #     index_name="ollama-index",
-    #     embedding=embedding_model
-    # )
+def get_qa_chain():
+    embedding = OllamaEmbeddings(model='deepseek-r1:1.5b')
     vector_store = Redis.from_existing_index(
-        # redis_host="mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com",
-        # redis_port=6379,
-        redis_url="redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379",
-        embedding=embedding_model,
-        index_name=index_name,
-        schema=schema,
+        embedding=embedding,
+        redis_url=redis_url
     )
 
-    return vector_store
-
-vector_store = init_vector_store()
-
-def load_and_chunk_contents_of_blog():
-    # Load and chunk contents of the blog
-    loader = WebBaseLoader(
-        web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
-        bs_kwargs=dict(
-            parse_only=bs4.SoupStrainer(
-                class_=("post-content", "post-title", "post-header")
-            )
-        ),
+    # Create a retrieval-based QA chain
+    qa_chain_v = RetrievalQA.from_chain_type(
+        llm=embedding,
+        chain_type="map_reduce",
+        retriever=vector_store.as_retriever()
     )
-    docs = loader.load()
-
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    all_splits = text_splitter.split_documents(docs)
-    # Index chunks
-    _ = vector_store.add_documents(documents=all_splits)
-    # Define prompt for question-answering
-    prompt = hub.pull("rlm/rag-prompt")
-    print(prompt)
-
-
-# Define state for application
-class State(TypedDict):
-    question: str
-    context: List[Document]
-    answer: str
-
-
-# Define application steps
-def retrieve(state: State):
-    retrieved_docs = vector_store.similarity_search(state["question"])
-    return {"context": retrieved_docs}
-
-
-def generate(state: State):
-    docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-    messages = prompt.invoke({"question": state["question"], "context": docs_content})
-    response = llm.invoke(messages)
-    return {"answer": response.content}
-
-def compile_application_and_test():
-    # Compile application and test
-    graph_builder = StateGraph(State).add_sequence([retrieve, generate])
-    graph_builder.add_edge(START, "retrieve")
-    graph = graph_builder.compile()
-    return graph
+    return qa_chain_v
 
 
 if __name__ == "__main__":
-    graph = compile_application_and_test()
-    state = graph.invoke({"question": "What is the main topic of this blog post?"})
-    print(state["answer"])
+    qa_chain = get_qa_chain()
+    query = "What is the information about Document 1?"
+
+    # Get the answer using RAG
+    result = qa_chain.run(query)
+    print(result)
