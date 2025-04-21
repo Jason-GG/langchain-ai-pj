@@ -40,7 +40,7 @@ docs = [
 if __name__ == "__main__":
     # ---- Embedding model ----
     # If you’re not using OpenAI, you can replace this with HuggingFaceEmbeddings or others
-    embedding = OllamaEmbeddings()
+    embedding = OllamaEmbeddings(model='deepseek-r1:1.5b')
 
     # ---- Ingest documents into Redis ----
     vector_store = Redis.from_documents(
