@@ -4,6 +4,9 @@ from langchain.schema import Document
 from langchain_core.embeddings import Embeddings
 import requests
 
+# command MODULE LIST is not supported by Redis Labs - monkey patch it
+Redis._check_redis_module_exist = lambda *args: True
+
 class OllamaEmbeddings(Embeddings):
     def __init__(self, model: str = "nomic-embed-text", endpoint: str = "http://localhost:11434"):
         self.model = model
