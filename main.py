@@ -31,7 +31,8 @@ def main():
     vector_store = Redis.from_existing_index(
         embedding=embedding,
         redis_url="redis://10.245.33.66:6379",
-        index_name="my-index"
+        index_name="my-index",
+        vector_schema="flat"
     )
 
     qa = RetrievalQA.from_chain_type(
