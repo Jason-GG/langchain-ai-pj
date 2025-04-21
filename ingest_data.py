@@ -32,7 +32,7 @@ class OllamaEmbeddings(Embeddings):
 
 
 # ---- Configuration ----
-redis_url = "redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379"
+redis_url = "redis://10.245.33.66:6379"
 index_name = "my-index"
 
 # Example documents (can come from files, DB, etc.)
