@@ -422,33 +422,22 @@ class Redis(VectorStore):
         return instance, keys
 
     @classmethod
+    @classmethod
     def from_texts(
-        cls: Type[Redis],
-        texts: List[str],
-        embedding: Embeddings,
-        metadatas: Optional[List[dict]] = None,
-        index_name: Optional[str] = None,
-        content_key: str = "content",
-        metadata_key: str = "metadata",
-        vector_key: str = "content_vector",
-        **kwargs: Any,
+            cls,
+            texts: List[str],
+            embedding: Embeddings,
+            metadatas: Optional[List[dict]] = None,
+            index_name: Optional[str] = None,
+            content_key: str = "content",
+            metadata_key: str = "metadata",
+            vector_key: str = "content_vector",
+            distance_metric: REDIS_DISTANCE_METRICS = "COSINE",
+            **kwargs: Any,
     ) -> Redis:
-        """Create a Redis vectorstore from raw documents.
-        This is a user-friendly interface that:
-            1. Embeds documents.
-            2. Creates a new index for the embeddings in Redis.
-            3. Adds the documents to the newly created Redis index.
-        This is intended to be a quick way to get started.
-        Example:
-            .. code-block:: python
-                from langchain.vectorstores import Redis
-                from langchain.embeddings import OpenAIEmbeddings
-                embeddings = OpenAIEmbeddings()
-                redisearch = RediSearch.from_texts(
-                    texts,
-                    embeddings,
-                    redis_url="redis://username:password@localhost:6379"
-                )
+        """
+        Create a Redis vectorstore from raw documents, without returning keys.
+        Same as `from_texts_return_keys`, but discards the keys.
         """
         instance, _ = cls.from_texts_return_keys(
             texts,
@@ -458,6 +447,7 @@ class Redis(VectorStore):
             content_key=content_key,
             metadata_key=metadata_key,
             vector_key=vector_key,
+            distance_metric=distance_metric,
             **kwargs,
         )
         return instance
