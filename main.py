@@ -1,10 +1,9 @@
-from langchain.vectorstores import Redis
+from langchain_community.vectorstores import Redis
 from langchain.chains import RetrievalQA
 from langchain_core.embeddings import Embeddings
 import requests
 
 
-# Your custom embedding class
 class OllamaEmbeddings(Embeddings):
     def __init__(self, model: str = "nomic-embed-text", endpoint: str = "http://localhost:11434"):
         self.model = model
@@ -25,35 +24,25 @@ class OllamaEmbeddings(Embeddings):
         return response.json()["embedding"]
 
 
-# ---- Configuration ----
-redis_url = "redis://10.245.33.66:6379"
-index_name = "my-index"
-
-
 def main():
     embedding = OllamaEmbeddings(model='deepseek-r1:1.5b')
 
-    # Monkey patch Redis module check
-    Redis._check_redis_module_exist = lambda *args: True
-
-    # Load the existing index from Redis
+    # No schema passed here
     vector_store = Redis.from_existing_index(
         embedding=embedding,
-        redis_url=redis_url,
-        index_name=index_name,
-        # schema="flat"  # this only works with `langchain.vectorstores.Redis`
+        redis_url="redis://10.245.33.66:6379",
+        index_name="my-index"
     )
 
-    # Build RetrievalQA chain
     qa = RetrievalQA.from_chain_type(
-        llm=embedding,  # If you have a real LLM (like OpenAI), replace this
+        llm=embedding,  # Replace this with real LLM if needed
         retriever=vector_store.as_retriever(),
-        chain_type="stuff"  # or "map_reduce" / "refine"
+        chain_type="stuff"
     )
 
     query = "What is LangChain?"
-    answer = qa.run(query)
-    print(f"Q: {query}\nA: {answer}")
+    result = qa.run(query)
+    print(result)
 
 
 if __name__ == "__main__":
