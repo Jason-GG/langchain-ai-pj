@@ -41,7 +41,7 @@ def main():
         embedding=embedding,
         redis_url=redis_url,
         index_name=index_name,
-        schema="flat"  # this only works with `langchain.vectorstores.Redis`
+        # schema="flat"  # this only works with `langchain.vectorstores.Redis`
     )
 
     # Build RetrievalQA chain
