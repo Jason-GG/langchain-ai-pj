@@ -1,10 +1,13 @@
-# from langchain.vectorstores import Redis
-from redis_v import Redis
+from langchain.vectorstores import Redis
+# from redis_v import Redis
 from langchain.schema import Document
 # ollama_embeddings.py
 from langchain_core.embeddings import Embeddings
 import requests
 
+
+# command MODULE LIST is not supported by Redis Labs - monkey patch it
+Redis._check_redis_module_exist = lambda *args: True
 
 
 class OllamaEmbeddings(Embeddings):
