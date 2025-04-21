@@ -32,7 +32,7 @@ def main():
         embedding=embedding,
         redis_url="redis://10.245.33.66:6379",
         index_name="my-index",
-        vector_schema="flat"
+        schema="flat"  # <- This is required in older versions
     )
 
     qa = RetrievalQA.from_chain_type(
