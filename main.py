@@ -39,8 +39,8 @@ def get_qa_chain():
     vector_store = Redis.from_existing_index(
         embedding=embedding,
         redis_url=redis_url,
-        index_name="my-index",
-        index_schema="flat_schema.json" # or "hnsw" depending on what you used when creating the index
+        index_name="my-index",  # or whatever index name you used
+        schema="flat"  # or "hnsw" depending on what you used when creating the index
     )
 
     # Create a retrieval-based QA chain
