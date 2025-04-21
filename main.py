@@ -49,8 +49,8 @@ def init_vector_store():
     #     embedding=embedding_model
     # )
     vector_store = Redis.from_existing_index(
-        redis_host="mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com",
-        redis_port=6379,
+        # redis_host="mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com",
+        # redis_port=6379,
         redis_url="redis://mce-vecotr-db.dx0ahi.ng.0001.use1.cache.amazonaws.com:6379",
         embedding=embedding_model,
         index_name=index_name,
